@@ -3,6 +3,7 @@ services:
     image: zepai/knowledge-graph-mcp:1.0.2
     environment:
       - OPENAI_API_KEY=ollama
+      - OPENAI_BASE_URL=http://host.docker.internal:11434/v1
       - SEMAPHORE_LIMIT=5
       - GRAPHITI_TELEMETRY_ENABLED=false
     volumes:
