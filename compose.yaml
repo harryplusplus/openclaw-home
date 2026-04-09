@@ -1,18 +1,26 @@
 services:
-  falkordb:
-    image: falkordb/falkordb:v4.18.0-alpine
-    ports:
-      - 6379:6379
-      - 3000:3000
+  graphiti:
+    image: zepai/knowledge-graph-mcp:1.0.2
     environment:
-      REDIS_ARGS: >-
-        --save 60 1000
-        --save 300 100
-        --appendonly yes
-        --appendfsync everysec
+      - OPENAI_API_KEY=ollama
+      - SEMAPHORE_LIMIT=5
+      - GRAPHITI_TELEMETRY_ENABLED=false
     volumes:
-      - falkordb-data:/var/lib/falkordb/data
+      - graphiti-data:/var/lib/falkordb/data
+      - graphiti-log:/var/log/graphiti
+      - ./graphiti/config.yaml:/app/mcp/config/config.yaml:ro
+    ports:
+      - "6379:6379"
+      - "3000:3000"
+      - "8000:8000"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
 volumes:
-  falkordb-data:
+  graphiti-data:
+  graphiti-log:
