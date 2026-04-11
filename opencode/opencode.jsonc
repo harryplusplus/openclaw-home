@@ -4,9 +4,11 @@
     "*": "allow",
   },
   "mcp": {
-    "ollama-search-fetch": {
+    "ollama_search_fetch": {
       "type": "local",
-      "command": ["/Users/harry/ai/mcps/ollama-search-fetch.py"],
+      "command": [
+        "/Users/harry/repo/al-jal-ttak-kkal-sen/mcps/ollama_search_fetch.py",
+      ],
       "enabled": true,
       "environment": {
         "OLLAMA_API_KEY": "{env:OLLAMA_API_KEY}",

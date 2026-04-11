@@ -9,6 +9,9 @@ dependencies = [
     "sentence-transformers>=5.4.0",
 ]
 
+[dependency-groups]
+dev = ["pyright>=1.1.408", "ruff>=0.15.10"]
+
 [project.scripts]
 setup = "al_jal_ttak_kkal_sen.cli.setup:main"
 hs-web = "al_jal_ttak_kkal_sen.cli.hs_web:main"

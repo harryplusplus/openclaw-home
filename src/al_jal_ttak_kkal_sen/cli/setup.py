@@ -17,7 +17,7 @@ def main() -> None:
         _install_pg_tokenizer()
         _install_vchord_bm25()
         _setup_postgres()
-        _build_opencode_hs()
+        _setup_opencode_hs()
     except Exception:
         console.print_exception(show_locals=True)
 
@@ -38,10 +38,22 @@ def _setup_postgres() -> None:
     _create_llmlingua2_tokenizer()
 
 
+def _setup_opencode_hs() -> None:
+    _build_opencode_hs()
+    _symlink_opencode_hs()
+
+
 def _build_opencode_hs() -> None:
     cwd = Path("external/hindsight/hindsight-integrations/opencode")
     _run(["npm", "i"], cwd=cwd)
     _run(["npm", "run", "build"], cwd=cwd)
+
+
+def _symlink_opencode_hs() -> None:
+    opencode_jsonc_path = Path.home().joinpath(".config/opencode/opencode.jsonc")
+    if opencode_jsonc_path.is_symlink() or opencode_jsonc_path.exists():
+        opencode_jsonc_path.unlink()
+    opencode_jsonc_path.symlink_to(Path().joinpath("opencode/opencode.jsonc").resolve())
 
 
 def _git_submodule_update() -> None:
