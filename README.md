@@ -3,14 +3,13 @@
 ## Architecture
 
 ```
-OpenClaw (Discord) ──┐
-                     ├─→ Hindsight API (:8888) ─→ PostgreSQL (hindsight DB)
-OpenCode (TUI) ──────┘         │                     ├─ pgvector (벡터 검색)
-                               │                     ├─ vchord (의존성)
-Control Plane (API 조회)        ├─→ Ollama (:11434)   ├─ vchord_bm25 (BM25)
-                               │   ├─ glm-5.1:cloud  └─ pg_tokenizer (한국어 토크나이징)
-                               │   └─ nomic-embed-text-v2-moe
-                               └─← 
+OpenClaw ──────┐
+               ├─→ Hindsight API (:8888) ─→ PostgreSQL (hindsight DB)
+OpenCode ──────┤   │                     ├─ pgvector (벡터 검색)
+               │         │                     ├─ vchord (의존성)
+Control Plane ─┘         └─→ Ollama (:11434)   ├─ vchord_bm25 (BM25)
+                                   ├─ glm-5.1:cloud  └─ pg_tokenizer (한국어 토크나이징)
+                                   └─ nomic-embed-text-v2-moe
 ```
 
 ## Setup
