@@ -58,6 +58,7 @@ psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS vector CASCADE;"
 psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS vchord CASCADE;"
 psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS pg_tokenizer CASCADE;"
 psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS vchord_bm25 CASCADE;"
+psql -d hindsight -c "SELECT tokenizer_catalog.create_tokenizer('llmlingua2', \$\$model = \"llmlingua2\"\$\$);"
 ```
 
 ### .env
