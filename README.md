@@ -52,6 +52,7 @@ cargo pgrx install --release --pg-config /opt/homebrew/bin/pg_config --manifest-
 
 ```sh
 psql -d hindsight -c "ALTER SYSTEM SET shared_preload_libraries = 'vchord,pg_tokenizer';"
+psql -d hindsight -c 'ALTER DATABASE hindsight SET search_path TO "\$user", public, tokenizer_catalog, bm25_catalog;'
 brew services restart postgresql@18
 psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS vector CASCADE;"
 psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS vchord CASCADE;"
