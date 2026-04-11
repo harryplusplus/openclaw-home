@@ -7,7 +7,7 @@ OpenClaw ─────────┐
                     ├─→ Hindsight API (:8888) ─→ PostgreSQL (DB)
 OpenCode ──────────┤       │                      ├─ pgvector (벡터 검색)
                     │       │                      ├─ vchord (의존성)
-Control Plane (조회)─┘       └─→ Ollama (:11434)    ├─ vchord_bm25 (BM25)
+Hindsight Control Plane ─┘       └─→ Ollama (:11434)    ├─ vchord_bm25 (BM25)
                                ├─ glm-5.1:cloud    └─ pg_tokenizer (한국어 토큰화)
                                └─ nomic-embed-text-v2-moe
 ```
@@ -17,6 +17,8 @@ Control Plane (조회)─┘       └─→ Ollama (:11434)    ├─ vchord_bm
 ### PostgreSQL
 
 ```sh
+brew install postgresql@18
+brew services start postgresql@18
 createdb hindsight
 ```
 
