@@ -91,17 +91,21 @@ wheels = [
 ]
 
 [[package]]
-name = "al-jal-ttak-kkal-ssen"
+name = "al-jal-ttak-kkal-sen"
 version = "0.0.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "hindsight-api-slim" },
+    { name = "python-dotenv" },
+    { name = "rich" },
     { name = "sentence-transformers" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "hindsight-api-slim", specifier = ">=0.5.0" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "rich", specifier = ">=14.3.4" },
     { name = "sentence-transformers", specifier = ">=5.4.0" },
 ]
 

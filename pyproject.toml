@@ -1,5 +1,41 @@
 [project]
-name = "al-jal-ttak-kkal-ssen"
+name = "al-jal-ttak-kkal-sen"
 version = "0.0.0"
 requires-python = ">=3.14"
-dependencies = ["hindsight-api-slim>=0.5.0", "sentence-transformers>=5.4.0"]
+dependencies = [
+    "hindsight-api-slim>=0.5.0",
+    "python-dotenv>=1.2.2",
+    "rich>=14.3.4",
+    "sentence-transformers>=5.4.0",
+]
+
+[project.scripts]
+setup = "al_jal_ttak_kkal_sen.cli.setup:main"
+hs-web = "al_jal_ttak_kkal_sen.cli.hs_web:main"
+hs-api = "al_jal_ttak_kkal_sen.cli.hs_api:main"
+
+[tool.uv]
+package = true
+
+[tool.pyright]
+typeCheckingMode = "strict"
+reportImplicitOverride = true
+include = ["src/**/*.py"]
+
+[tool.ruff]
+target-version = "py314"
+include = ["src/**/*.py", "pyproject.toml"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "COM812",
+    "COM819",
+    "D",
+    "EM101",
+    "EM102",
+    "TRY003",
+    "S603",
+    "S607",
+    "BLE001",
+]
