@@ -19,7 +19,6 @@ Control Plane ─┘   └─→ Ollama (:11434)      ├─ vchord_bm25 (BM25)
 ```sh
 createdb hindsight
 brew install pgvector
-psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS vector CASCADE;"
 ```
 
 ### vchord (소스 빌드, Rust nightly 필요)
@@ -46,6 +45,7 @@ cargo pgrx install --release --pg-config /opt/homebrew/bin/pg_config --manifest-
 ```sh
 psql -d hindsight -c "ALTER SYSTEM SET shared_preload_libraries = 'vchord,pg_tokenizer';"
 brew services restart postgresql@18
+psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS vector CASCADE;"
 psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS vchord CASCADE;"
 psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS pg_tokenizer CASCADE;"
 psql -d hindsight -c "CREATE EXTENSION IF NOT EXISTS vchord_bm25 CASCADE;"
