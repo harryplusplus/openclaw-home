@@ -10,7 +10,7 @@ OpenCode (TUI) ──────┘         │                     ├─ pgve
                                ├─→ Ollama (:11434)   ├─ vchord_bm25 (BM25)
                                │   ├─ glm-5.1:cloud  └─ pg_tokenizer (한국어 토크나이징)
                                │   └─ nomic-embed-text-v2-moe
-                               └─→ Control Plane (pnpm)
+                               └─← Control Plane (API 조회)
 ```
 
 ## Setup
@@ -72,39 +72,3 @@ uv run --env-file .env hindsight-api
 ```sh
 pnpm i && uv run --env-file .env pnpm hindsight-control-plane
 ```
-
-## Hindsight + OpenClaw
-
-```json
-{
-  "plugins": {
-    "entries": {
-      "hindsight-openclaw": {
-        "enabled": true,
-        "config": {
-          "hindsightApiUrl": "http://0.0.0.0:8888",
-          "dynamicBankId": false
-        }
-      }
-    }
-  }
-}
-```
-
-- `dynamicBankId: false` → 모든 클라이언트가 같은 뱅크(`openclaw`) 공유
-- OpenCode: `opencode.json`에서 `bankId: "openclaw"` 설정
-
-## 확장 역할
-
-| 확장 | 역할 |
-|---|---|
-| pgvector | 임베딩 벡터 저장/검색 (HNSW) |
-| vchord | vchord_bm25의 의존성 |
-| vchord_bm25 | BM25 텍스트 검색 |
-| pg_tokenizer | 한국어 토크나이징 (llmlingua2) |
-
-## 주의
-
-- `shared_preload_libraries` 값은 콤마만으로 구분 (공백 금지, PostgreSQL이 전체를 하나의 파일명으로 인식함)
-- Rust nightly: `rustup default nightly` (vchord 빌드용)
-- pgrx 0.16.1: pg_tokenizer, vchord_bm25 빌드용 (0.17.0 아님)
