@@ -1,22 +1,5 @@
 [project]
 name = "openclaw-home"
 version = "0.0.0"
-description = "Harry's OpenClaw home"
-readme = "README.md"
 requires-python = ">=3.14"
-
-[dependency-groups]
-dev = ["pyright>=1.1.408", "ruff>=0.15.8"]
-
-[tool.pyright]
-typeCheckingMode = "strict"
-reportImplicitOverride = true
-include = ["scripts/**/*.py"]
-
-[tool.ruff]
-target-version = "py314"
-include = ["scripts/**/*.py"]
-
-[tool.ruff.lint]
-select = ["ALL"]
-ignore = ["D"]
+dependencies = ["hindsight-api-slim>=0.5.0", "sentence-transformers>=5.4.0"]
