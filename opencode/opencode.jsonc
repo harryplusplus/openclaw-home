@@ -22,6 +22,8 @@
         "hindsightApiUrl": "http://localhost:8888",
         "bankId": "openclaw",
         "skipAgents": ["gemini-3-flash-preview"],
+        "retainEveryNTurns": 1,
+        "retainMode": "last-turn"
       },
     ],
   ],

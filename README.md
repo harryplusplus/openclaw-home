@@ -4,15 +4,24 @@
 
 ## Architecture
 
-```
-OpenClaw ────────────────┐
-                         ├─→ Hindsight API ─→ PostgreSQL
-OpenCode ────────────────┤       │            ├─ pgvector (vector search)
-                         │       │            ├─ vchord (dependency)
-Hindsight Control Plane ─┘       │            ├─ vchord_bm25 (BM25 search)
-                                 └─→ Ollama   └─ pg_tokenizer (Korean tokenizer)
-                                     ├─ glm-5.1:cloud
-                                     └─ nomic-embed-text-v2-moe
+```mermaid
+flowchart TD
+    subgraph LOCAL["🖥️ Local"]
+        AH["Agent Harness<br/>OpenClaw / OpenCode"] -->|auto retain / recall| HA[Hindsight API]
+        HCP[Hindsight Control Plane] -->|manages| HA
+
+        HA -->|store| PG[(Postgres)]
+        HA -->|Semantic| BGE["BAAI/bge-m3"]
+        HA -->|Keyword| LL2[llmlingua2]
+        HA -->|Rerank| BRER["BAAI/bge-reranker-v2-m3"]
+        HA -->|Temporal| DP[dateparser]
+    end
+
+    HA -->|Graph| GLM
+
+    subgraph LLM["☁️ LLM API"]
+        GLM[glm-5.1]
+    end
 ```
 
 ## Setup
