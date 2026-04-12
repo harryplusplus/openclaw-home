@@ -24,6 +24,9 @@ flowchart TD
     end
 ```
 
+- `BAAI/bge-m3` and `BAAI/bge-reranker-v2-m3` are multilingual embedding models with Korean support.
+- `llmlingua2` is a multilingual tokenizer with Korean support.
+
 ## Setup
 
 ```sh
