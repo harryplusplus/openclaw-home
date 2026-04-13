@@ -24,6 +24,16 @@ export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
     return part.text;
   };
 
+  const log = (
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    extra?: Record<string, unknown>,
+  ) => {
+    void opencode.app
+      .log({ body: { service: "ajtks", level, message, extra } })
+      .catch(() => {});
+  };
+
   const {
     enabled,
     autoRetain,
@@ -40,6 +50,20 @@ export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
   } = fillOptions(options);
   const sessionCache = new SessionCache();
   const hindsight = enabled ? new HindsightClient({ baseUrl, apiKey }) : null;
+
+  log("info", "plugin initialized", {
+    enabled,
+    autoRetain,
+    autoRecall,
+    bankId,
+    baseUrl,
+    agentAllowList,
+    recallTimeoutMs,
+    recallBudget,
+    recallMaxTokens,
+    recallEntityMaxTokens,
+    recallTags,
+  });
 
   return {
     event: async ({ event }) => {
@@ -118,11 +142,15 @@ export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
       const userText = await fetchMessageText(sessionId, userMessageId);
       if (!userText) return;
 
+      log("debug", "recall input", { sessionId, text: userText });
+
       const res = await recallWithTimeout({
         baseUrl,
         apiKey,
         bankId,
         timeoutMs: recallTimeoutMs,
+        onFailure: (reason, extra) =>
+          log("warn", "recall failed", { sessionId, reason, ...extra }),
         request: {
           query: userText,
           budget: recallBudget,
@@ -145,6 +173,8 @@ export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
       const text = recallResponseToPromptString(res);
       if (!text) return;
 
+      log("debug", "recall output", { sessionId, text });
+
       output.system.push(buildRecallSection(text));
     },
   };
@@ -156,12 +186,14 @@ async function recallWithTimeout({
   bankId,
   request,
   timeoutMs,
+  onFailure,
 }: {
   baseUrl: string;
   apiKey: string | undefined;
   bankId: string;
   request: RecallRequest;
   timeoutMs: number;
+  onFailure?: (reason: string, extra?: Record<string, unknown>) => void;
 }): Promise<RecallResponse | null> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Math.max(1, timeoutMs));
@@ -181,10 +213,16 @@ async function recallWithTimeout({
       body: JSON.stringify(request),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      onFailure?.("http_error", { status: response.status });
+      return null;
+    }
 
     return (await response.json()) as RecallResponse;
-  } catch {
+  } catch (error) {
+    onFailure?.("exception", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   } finally {
     clearTimeout(timeout);
