@@ -6,16 +6,6 @@ import type {
 import { recallResponseToPromptString } from "@vectorize-io/hindsight-client";
 
 export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
-  const log = (
-    level: "debug" | "info" | "warn" | "error",
-    message: string,
-    extra?: Record<string, unknown>,
-  ) => {
-    void opencode.app
-      .log({ body: { service: "ajtks", level, message, extra } })
-      .catch(() => {});
-  };
-
   const {
     enabled,
     bankId,
@@ -27,7 +17,27 @@ export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
     recallMaxTokens,
     recallEntityMaxTokens,
     recallTags,
+    logBaseUrl,
+    logTimeoutMs,
   } = fillOptions(options);
+
+  const log = (
+    level: LogLevel,
+    message: string,
+    extra?: Record<string, unknown>,
+  ) => {
+    const localBody: LocalLogBody = {
+      ...extra,
+      service: "opencode-ajtks",
+      level,
+      message,
+    };
+    void opencode.app
+      .log({ body: { service: "opencode-ajtks", level, message, extra } })
+      .catch(() => {});
+    postLog(logBaseUrl, logTimeoutMs, localBody);
+  };
+
   const sessionCache = new SessionCache();
 
   log("info", "plugin initialized", {
@@ -40,6 +50,8 @@ export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
     recallMaxTokens,
     recallEntityMaxTokens,
     recallTags,
+    logBaseUrl,
+    logTimeoutMs,
   });
 
   return {
@@ -125,6 +137,32 @@ const module: PluginModule = { id: "ajtks", server: AjtksPlugin };
 
 export default module;
 
+function postLog(
+  baseUrl: string | undefined,
+  timeoutMs: number,
+  body: LocalLogBody,
+) {
+  if (!baseUrl) return;
+
+  let url: URL;
+  try {
+    url = new URL("/log", baseUrl);
+  } catch {
+    return;
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), Math.max(1, timeoutMs));
+  void fetch(url, {
+    method: "POST",
+    signal: controller.signal,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  })
+    .catch(() => {})
+    .finally(() => clearTimeout(timeout));
+}
+
 async function recallWithTimeout({
   baseUrl,
   apiKey,
@@ -199,9 +237,20 @@ function fillOptions(options?: Record<string, unknown>): FilledOptions {
     recallMaxTokens: 2_000,
     recallEntityMaxTokens: 500,
     recallTags: undefined,
+    logBaseUrl: undefined,
+    logTimeoutMs: 300,
   };
   return { ...defaultOptions, ...options };
 }
+
+type LogLevel = "debug" | "info" | "warn" | "error";
+
+type LocalLogBody = {
+  service: "opencode-ajtks";
+  level: LogLevel;
+  message: string;
+  [key: string]: unknown;
+};
 
 type FilledOptions = {
   enabled: boolean;
@@ -214,6 +263,8 @@ type FilledOptions = {
   recallMaxTokens: number;
   recallEntityMaxTokens: false | number;
   recallTags: string[] | undefined;
+  logBaseUrl: string | undefined;
+  logTimeoutMs: number;
 };
 
 type SessionId = string;

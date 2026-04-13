@@ -9,6 +9,7 @@ resolution-markers = [
 [manifest]
 members = [
     "al-jal-ttak-kkal-sen",
+    "log-server",
     "opencode-retainer",
 ]
 
@@ -1496,6 +1497,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/22/92/6ce9737554994ca8e
 wheels = [
     { url = "https://files.pythonhosted.org/packages/19/2c/a670cc050fcd6f45c6199eb99e259c73aea92edba8d5c2fc1b3686d36217/litellm-1.83.0-py3-none-any.whl", hash = "sha256:88c536d339248f3987571493015784671ba3f193a328e1ea6780dbebaa2094a8", size = 15610306, upload-time = "2026-03-31T05:08:21.987Z" },
 ]
+
+[[package]]
+name = "log-server"
+version = "0.0.0"
+source = { editable = "python/log-server" }
 
 [[package]]
 name = "lxml"
