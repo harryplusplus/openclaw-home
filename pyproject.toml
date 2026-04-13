@@ -18,14 +18,22 @@ setup = "al_jal_ttak_kkal_sen.cli.setup:main"
 [tool.uv]
 package = true
 
+[tool.uv.workspace]
+members = ["python/*"]
+
 [tool.pyright]
 typeCheckingMode = "strict"
 reportImplicitOverride = true
-include = ["src/**/*.py"]
+include = ["src/**/*.py", "python/*/src/**/*.py"]
 
 [tool.ruff]
 target-version = "py314"
-include = ["src/**/*.py", "pyproject.toml"]
+include = [
+    "src/**/*.py",
+    "python/*/src/**/*.py",
+    "pyproject.toml",
+    "python/*/pyproject.toml",
+]
 
 [tool.ruff.lint]
 select = ["ALL"]
