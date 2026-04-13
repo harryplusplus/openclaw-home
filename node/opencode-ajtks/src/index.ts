@@ -3,14 +3,7 @@ import type {
   RecallRequest,
   RecallResponse,
 } from "@vectorize-io/hindsight-client";
-import {
-  HindsightClient,
-  recallResponseToPromptString,
-} from "@vectorize-io/hindsight-client";
-
-const HARNESS = "opencode";
-const RETAIN_CONTEXT =
-  "OpenCode assistant conversation turn. Retain durable user preferences, project facts, decisions, and outcomes. Treat assistant text as the assistant response, not as user-authored facts. Ignore transient wording and non-durable reasoning.";
+import { recallResponseToPromptString } from "@vectorize-io/hindsight-client";
 
 export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
   const fetchMessageText = async (sessionId: SessionId, messageId: string) => {
@@ -36,11 +29,9 @@ export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
 
   const {
     enabled,
-    autoRetain,
     bankId,
     baseUrl,
     apiKey,
-    autoRecall,
     agentAllowList,
     recallTimeoutMs,
     recallBudget,
@@ -49,12 +40,9 @@ export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
     recallTags,
   } = fillOptions(options);
   const sessionCache = new SessionCache();
-  const hindsight = enabled ? new HindsightClient({ baseUrl, apiKey }) : null;
 
   log("info", "plugin initialized", {
     enabled,
-    autoRetain,
-    autoRecall,
     bankId,
     baseUrl,
     agentAllowList,
@@ -67,52 +55,7 @@ export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
 
   return {
     event: async ({ event }) => {
-      if (event.type === "message.updated") {
-        const { info: message } = event.properties;
-        if (message.role !== "assistant") return;
-
-        const sessionId = message.sessionID;
-        sessionCache.setAssistantMessageId(sessionId, message.id);
-        sessionCache.setUserMessageId(sessionId, message.parentID);
-      } else if (event.type === "session.idle") {
-        const sessionId = event.properties.sessionID;
-        const userMessageId = sessionCache.takeUserMessageId(sessionId);
-        const assistantMessageId =
-          sessionCache.takeAssistantMessageId(sessionId);
-
-        if (!enabled) return;
-        if (!autoRetain) return;
-        if (!userMessageId) return;
-        if (!assistantMessageId) return;
-
-        const userText = await fetchMessageText(sessionId, userMessageId);
-        if (!userText) return;
-
-        const assistantText = await fetchMessageText(
-          sessionId,
-          assistantMessageId,
-        );
-        if (!assistantText) return;
-
-        const agent = sessionCache.getAgent(sessionId);
-        const content = wrapRetainContent(userText, assistantText);
-
-        await hindsight?.retain(bankId, content, {
-          timestamp: new Date(),
-          context: RETAIN_CONTEXT,
-          documentId: sessionId,
-          async: true,
-          updateMode: "append",
-          tags: getRetainTags(sessionId, agent),
-          metadata: {
-            harness: HARNESS,
-            sessionId,
-            userMessageId,
-            assistantMessageId,
-            ...(agent ? { agent } : {}),
-          },
-        });
-      } else if (event.type === "session.deleted") {
+      if (event.type === "session.deleted") {
         if (!enabled) return;
 
         const sessionId = event.properties.info.id;
@@ -131,10 +74,9 @@ export const AjtksPlugin: Plugin = async ({ client: opencode }, options) => {
       if (!sessionId) return;
 
       const userMessageId = sessionCache.takeUserMessageId(sessionId);
-      const agent = sessionCache.getAgent(sessionId);
+      const agent = sessionCache.takeAgent(sessionId);
 
       if (!enabled) return;
-      if (!autoRecall) return;
       if (!userMessageId) return;
       if (!agent) return;
       if (!agentAllowList.includes(agent)) return;
@@ -229,23 +171,6 @@ async function recallWithTimeout({
   }
 }
 
-function wrapRetainContent(userText: string, assistantText: string): string {
-  return [
-    "<opencode_turn>",
-    "The user message is the user's request.",
-    "The assistant message is the assistant response.",
-    "",
-    "<user_message>",
-    userText,
-    "</user_message>",
-    "",
-    "<assistant_message>",
-    assistantText,
-    "</assistant_message>",
-    "</opencode_turn>",
-  ].join("\n");
-}
-
 function buildRecallSection(text: string): string {
   return [
     "<hindsight_memory_context>",
@@ -259,23 +184,12 @@ function buildRecallSection(text: string): string {
   ].join("\n");
 }
 
-function getRetainTags(sessionId: SessionId, agent: string | null): string[] {
-  return [
-    `harness:${HARNESS}`,
-    "scope:local",
-    `session:${sessionId}`,
-    ...(agent ? [`agent:${agent}`] : []),
-  ];
-}
-
 function fillOptions(options?: Record<string, unknown>): FilledOptions {
   const defaultOptions: FilledOptions = {
     enabled: true,
     baseUrl: "http://localhost:8888",
     bankId: "openclaw",
     apiKey: undefined,
-    autoRecall: true,
-    autoRetain: true,
     agentAllowList: ["build"],
     recallTimeoutMs: 1_500,
     recallBudget: "mid",
@@ -292,8 +206,6 @@ type FilledOptions = {
   apiKey: string | undefined;
   bankId: string;
   agentAllowList: string[];
-  autoRecall: boolean;
-  autoRetain: boolean;
   recallTimeoutMs: number;
   recallBudget: "low" | "mid" | "high";
   recallMaxTokens: number;
@@ -302,27 +214,10 @@ type FilledOptions = {
 };
 
 type SessionId = string;
-type SessionData = {
-  assistantMessageId: string | null;
-  userMessageId: string | null;
-  agent: string | null;
-};
+type SessionData = { userMessageId: string | null; agent: string | null };
 
 class SessionCache {
   private map = new Map<SessionId, SessionData>();
-
-  setAssistantMessageId(sessionId: SessionId, assistantMessageId: string) {
-    this.setData(sessionId).assistantMessageId = assistantMessageId;
-  }
-
-  takeAssistantMessageId(sessionId: SessionId): string | null {
-    const data = this.map.get(sessionId);
-    if (!data) return null;
-
-    const assistantMessageId = data.assistantMessageId;
-    data.assistantMessageId = null;
-    return assistantMessageId;
-  }
 
   setUserMessageId(sessionId: SessionId, userMessageId: string) {
     this.setData(sessionId).userMessageId = userMessageId;
@@ -341,8 +236,13 @@ class SessionCache {
     this.setData(sessionId).agent = agent;
   }
 
-  getAgent(sessionId: SessionId): string | null {
-    return this.map.get(sessionId)?.agent ?? null;
+  takeAgent(sessionId: SessionId): string | null {
+    const data = this.map.get(sessionId);
+    if (!data) return null;
+
+    const agent = data.agent;
+    data.agent = null;
+    return agent;
   }
 
   delete(sessionId: SessionId) {
@@ -351,11 +251,7 @@ class SessionCache {
 
   private setData(sessionId: SessionId): SessionData {
     if (!this.map.has(sessionId)) {
-      this.map.set(sessionId, {
-        assistantMessageId: null,
-        userMessageId: null,
-        agent: null,
-      });
+      this.map.set(sessionId, { userMessageId: null, agent: null });
     }
 
     return this.map.get(sessionId)!;
