@@ -5,7 +5,7 @@ description: >-
   속성 읽기, 프롬프트 XML 생성 시 사용하세요. 스킬 생성, 검증, 디버깅 작업이나
   SKILL.md frontmatter, 스킬 디렉토리 구조에 관한 작업을 할 때 활성화하세요.
 license: MIT
-compatibility: uv와 pyyaml이 필요합니다.
+compatibility: uv가 필요합니다.
 metadata:
   author: al-jal-ttak-kkal-sen
   version: "1.0"

@@ -6,7 +6,7 @@ description: >-
   검수하거나 자체 스킬의 품질을 확인할 때 사용하세요. 스킬 검수, 품질 평가,
   리뷰 작업에 활성화하세요.
 license: MIT
-compatibility: uv와 pyyaml이 필요합니다.
+compatibility: uv가 필요합니다.
 metadata:
   author: al-jal-ttak-kkal-sen
   version: "1.0"
