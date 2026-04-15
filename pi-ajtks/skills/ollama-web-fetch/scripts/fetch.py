@@ -14,6 +14,7 @@ Ollama Web Fetch API를 사용해 웹 페이지 내용을 가져옵니다.
 """
 
 import argparse
+import contextlib
 import json
 import os
 import sys
@@ -30,11 +31,7 @@ class _Args(argparse.Namespace):
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Ollama 웹 페치 API를 사용해 웹 페이지 내용을 가져옵니다.",
-        epilog=(
-            "예시:\n"
-            '  uv run fetch.py "https://ollama.com"\n'
-            '  uv run fetch.py "ollama.com"\n'
-        ),
+        epilog=('예시:\n  uv run fetch.py "https://ollama.com"\n  uv run fetch.py "ollama.com"\n'),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -90,10 +87,8 @@ def main() -> None:
             )
         else:
             error_body = ""
-            try:
+            with contextlib.suppress(Exception):
                 error_body = e.read().decode("utf-8", errors="replace")
-            except Exception:
-                pass
             print(
                 f"오류: API 요청 실패 (HTTP {e.code})\n{error_body}",
                 file=sys.stderr,

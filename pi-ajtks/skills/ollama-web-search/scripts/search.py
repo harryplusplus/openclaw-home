@@ -14,6 +14,7 @@ Ollama Web Search API를 사용해 웹을 검색합니다.
 """
 
 import argparse
+import contextlib
 import json
 import os
 import sys
@@ -31,11 +32,7 @@ class _Args(argparse.Namespace):
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Ollama 웹 검색 API를 사용해 웹을 검색합니다.",
-        epilog=(
-            "예시:\n"
-            '  uv run search.py "최신 AI 뉴스"\n'
-            '  uv run search.py "올라마란 무엇인가" --max-results 3\n'
-        ),
+        epilog=('예시:\n  uv run search.py "최신 AI 뉴스"\n  uv run search.py "올라마란 무엇인가" --max-results 3\n'),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -101,10 +98,8 @@ def main() -> None:
             )
         else:
             error_body = ""
-            try:
+            with contextlib.suppress(Exception):
                 error_body = e.read().decode("utf-8", errors="replace")
-            except Exception:
-                pass
             print(
                 f"오류: API 요청 실패 (HTTP {e.code})\n{error_body}",
                 file=sys.stderr,

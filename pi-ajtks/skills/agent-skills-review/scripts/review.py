@@ -185,6 +185,40 @@ def check_description_quality(description: str) -> list[dict[str, Any]]:
             }
         )
 
+    # Check for execution commands in description
+    # Description should focus on "when to activate", not "how to run"
+    exec_patterns = [
+        r"uv run ",
+        r"python[3]? ",
+        r"python[3]?\.py ",
+        r"bash ",
+        r"node ",
+        r"npx ",
+        r"deno run ",
+        r"bun run ",
+        r"go run ",
+        r"실행[:：]",
+        r"실행하[:：]",
+        r"run[:：]",
+    ]
+    has_exec_cmd = any(
+        re.search(p, description, re.IGNORECASE) for p in exec_patterns
+    )
+    if has_exec_cmd:
+        findings.append(
+            {
+                "severity": "warning",
+                "category": "description",
+                "message": (
+                    "Description contains execution commands (e.g. "
+                    "'uv run', 'bash', '실행:'). Description should "
+                    "focus on when to activate the skill, not how to "
+                    "run it. Move execution instructions to the "
+                    "SKILL.md body."
+                ),
+            }
+        )
+
     return findings
 
 
