@@ -12,6 +12,9 @@ importers:
         specifier: ^0.5.0
         version: 0.5.0(@babel/core@7.29.0)(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(jiti@2.6.1)(redux@5.0.1)(styled-components@6.4.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5))
     devDependencies:
+      '@typescript/native-preview':
+        specifier: 7.0.0-dev.20260415.1
+        version: 7.0.0-dev.20260415.1
       oxfmt:
         specifier: ^0.45.0
         version: 0.45.0
@@ -19,21 +22,7 @@ importers:
         specifier: ^1.60.0
         version: 1.60.0
 
-  node/opencode-ajtks:
-    dependencies:
-      '@vectorize-io/hindsight-client':
-        specifier: ^0.5.1
-        version: 0.5.1
-    devDependencies:
-      '@opencode-ai/plugin':
-        specifier: ^1.4.3
-        version: 1.4.3
-
-  node/pi-ajtks:
-    dependencies:
-      '@vectorize-io/hindsight-client':
-        specifier: ^0.5.1
-        version: 0.5.1
+  pi-packages/skill-tool:
     devDependencies:
       '@mariozechner/pi-coding-agent':
         specifier: ^0.67.1
@@ -702,20 +691,6 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
-
-  '@opencode-ai/plugin@1.4.3':
-    resolution: {integrity: sha512-Ob/3tVSIeuMRJBr2O23RtrnC5djRe01Lglx+TwGEmjrH9yDBJ2tftegYLnNEjRoMuzITgq9LD8168p4pzv+U/A==}
-    peerDependencies:
-      '@opentui/core': '>=0.1.97'
-      '@opentui/solid': '>=0.1.97'
-    peerDependenciesMeta:
-      '@opentui/core':
-        optional: true
-      '@opentui/solid':
-        optional: true
-
-  '@opencode-ai/sdk@1.4.3':
-    resolution: {integrity: sha512-X0CAVbwoGAjTY2iecpWkx2B+GAa2jSaQKYpJ+xILopeF/OGKZUN15mjqci+L7cEuwLHV5wk3x2TStUOVCa5p0A==}
 
   '@oxfmt/binding-android-arm-eabi@0.45.0':
     resolution: {integrity: sha512-A/UMxFob1fefCuMeGxQBulGfFE38g2Gm23ynr3u6b+b7fY7/ajGbNsa3ikMIkGMLJW/TRoQaMoP1kME7S+815w==}
@@ -1917,6 +1892,45 @@ packages:
     resolution: {integrity: sha512-y+vH7QE8ycjoa0bWciFg7OpFcipUuem1ujhrdLtq1gByKwfbC7bPeKsiny9e0urg93DqwGcHey+bGRKCnF1nZQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260415.1':
+    resolution: {integrity: sha512-yGyyDb9bP3XfaIm8VUiaq7xkKwFSxLQ44XGYV78lrne12GhXgZ7Smbf2BVnT5MrTgT5uooMzww85P3I3XNVZng==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@typescript/native-preview-darwin-x64@7.0.0-dev.20260415.1':
+    resolution: {integrity: sha512-vzac8BSbSkGPV/FMKyY/3cNZN+FgvjT1E+NNR8xWO8DfvSz4hYqbxvAL+zWPUno6R8afNFLZeJTfuIge0tJJ1g==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@typescript/native-preview-linux-arm64@7.0.0-dev.20260415.1':
+    resolution: {integrity: sha512-jiXu+SrpCL/6J3LwuUSxU8scYs5H0wBkqu3CopdSTcJxQuzUDe6QAEoEW3O81cdrsq5qrIlfFxWH3bdohsvhJA==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@typescript/native-preview-linux-arm@7.0.0-dev.20260415.1':
+    resolution: {integrity: sha512-1CI2nLfsoEibEAt6ApMVEr5M/v9EeXHmn9iD2nyyomO34ky3zqBtEPHakvgXD4QmpZg9O4WxRKc6u6EIy0Imxg==}
+    cpu: [arm]
+    os: [linux]
+
+  '@typescript/native-preview-linux-x64@7.0.0-dev.20260415.1':
+    resolution: {integrity: sha512-+4r4UqGE5ccy9vJNOhjXTqbZPkVGlqdiEgTJbdz8+EpUNQaLGMBhDj1cBMdrdK1YRuj/3C+pLfE3PD9kEsxf6Q==}
+    cpu: [x64]
+    os: [linux]
+
+  '@typescript/native-preview-win32-arm64@7.0.0-dev.20260415.1':
+    resolution: {integrity: sha512-QsCAG7la4GE4Dp7i9MUz7Qv+HbKVDdmwlmn+8sOo0M3aSC6WssCU5gKVBUjp43WPtml/JticwzSz1qXLfdxHFA==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@typescript/native-preview-win32-x64@7.0.0-dev.20260415.1':
+    resolution: {integrity: sha512-Z+rclKC7FqkUsqQ+ErgWJmf5J55LEl/rooFq71prC6V0vCBa5yLMmLBmFxZLLj2BsCBuwbN2O7aWUWrpCUEkmw==}
+    cpu: [x64]
+    os: [win32]
+
+  '@typescript/native-preview@7.0.0-dev.20260415.1':
+    resolution: {integrity: sha512-kRQ0x4DgXZBI0bNTck65EUaj48+hbMlCHiJKfc0Se5ZVUG0SKRC6JBPLwIBCX5TfljKsm8SstuJ3qn6uw1IWpA==}
+    hasBin: true
+
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
@@ -2022,9 +2036,6 @@ packages:
     resolution: {integrity: sha512-lrW200hZdbfRtztbygyaq/6jP6AKE8qQN2KvPcJ+x7wiD038YtnYtZ82IMNJ69GJibV7bwL3y9FgK+5w/pYt6g==}
     cpu: [x64]
     os: [win32]
-
-  '@vectorize-io/hindsight-client@0.5.1':
-    resolution: {integrity: sha512-UD6O+kNMKGfqh5Gp9aXc2eQkp7eoHsreraRTq0pQDFU1izpAWNUnrmJyNwRDBdk8Ew2g0CSgTgrMpjuLb57hbw==}
 
   '@vectorize-io/hindsight-control-plane@0.5.0':
     resolution: {integrity: sha512-E1ke8IZczVa1K69bLTIHhG472LGAgo8ylPPMnloroGlYmvZ/kYTlRmmEgUUGP9UNmyWslGzInN+coOvp/E/8dA==}
@@ -4323,9 +4334,6 @@ packages:
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
-  zod@4.1.8:
-    resolution: {integrity: sha512-5R1P+WwQqmmMIEACyzSvo4JXHY5WiAFHRMg+zBZKgKS+Q1viRa0C1hmUKtHltoIFKtIdki3pRxkmpP74jnNYHQ==}
-
   zod@4.3.6:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
@@ -5246,15 +5254,6 @@ snapshots:
       fastq: 1.20.1
 
   '@nolyfill/is-core-module@1.0.39': {}
-
-  '@opencode-ai/plugin@1.4.3':
-    dependencies:
-      '@opencode-ai/sdk': 1.4.3
-      zod: 4.1.8
-
-  '@opencode-ai/sdk@1.4.3':
-    dependencies:
-      cross-spawn: 7.0.6
 
   '@oxfmt/binding-android-arm-eabi@0.45.0':
     optional: true
@@ -6453,6 +6452,37 @@ snapshots:
       '@typescript-eslint/types': 8.58.1
       eslint-visitor-keys: 5.0.1
 
+  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260415.1':
+    optional: true
+
+  '@typescript/native-preview-darwin-x64@7.0.0-dev.20260415.1':
+    optional: true
+
+  '@typescript/native-preview-linux-arm64@7.0.0-dev.20260415.1':
+    optional: true
+
+  '@typescript/native-preview-linux-arm@7.0.0-dev.20260415.1':
+    optional: true
+
+  '@typescript/native-preview-linux-x64@7.0.0-dev.20260415.1':
+    optional: true
+
+  '@typescript/native-preview-win32-arm64@7.0.0-dev.20260415.1':
+    optional: true
+
+  '@typescript/native-preview-win32-x64@7.0.0-dev.20260415.1':
+    optional: true
+
+  '@typescript/native-preview@7.0.0-dev.20260415.1':
+    optionalDependencies:
+      '@typescript/native-preview-darwin-arm64': 7.0.0-dev.20260415.1
+      '@typescript/native-preview-darwin-x64': 7.0.0-dev.20260415.1
+      '@typescript/native-preview-linux-arm': 7.0.0-dev.20260415.1
+      '@typescript/native-preview-linux-arm64': 7.0.0-dev.20260415.1
+      '@typescript/native-preview-linux-x64': 7.0.0-dev.20260415.1
+      '@typescript/native-preview-win32-arm64': 7.0.0-dev.20260415.1
+      '@typescript/native-preview-win32-x64': 7.0.0-dev.20260415.1
+
   '@ungap/structured-clone@1.3.0': {}
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
@@ -6513,8 +6543,6 @@ snapshots:
 
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
-
-  '@vectorize-io/hindsight-client@0.5.1': {}
 
   '@vectorize-io/hindsight-control-plane@0.5.0(@babel/core@7.29.0)(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(jiti@2.6.1)(redux@5.0.1)(styled-components@6.4.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5))':
     dependencies:
@@ -9442,8 +9470,6 @@ snapshots:
   zod-validation-error@4.0.2(zod@4.3.6):
     dependencies:
       zod: 4.3.6
-
-  zod@4.1.8: {}
 
   zod@4.3.6: {}
 
