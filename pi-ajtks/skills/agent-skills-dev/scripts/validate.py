@@ -22,6 +22,7 @@ import argparse
 import sys
 import unicodedata
 from pathlib import Path
+from typing import Any, cast
 
 from _common import find_skill_md, output_json, parse_frontmatter
 
@@ -29,7 +30,7 @@ MAX_NAME_LENGTH = 64
 MAX_DESCRIPTION_LENGTH = 1024
 MAX_COMPATIBILITY_LENGTH = 500
 
-ALLOWED_FIELDS = {
+ALLOWED_FIELDS: set[str] = {
     "name",
     "description",
     "license",
@@ -39,44 +40,44 @@ ALLOWED_FIELDS = {
 }
 
 
-def _validate_name(name, skill_dir: Path) -> list[str]:
+def _validate_name(name: Any, skill_dir: Path) -> list[str]:
     """Validate skill name format and directory match."""
-    errors = []
+    errors: list[str] = []
 
     if not isinstance(name, str) or not name.strip():
         errors.append("Field 'name' must be a non-empty string")
         return errors
 
-    name = unicodedata.normalize("NFKC", name.strip())
+    normalized = unicodedata.normalize("NFKC", name.strip())
 
-    if len(name) > MAX_NAME_LENGTH:
-        errors.append(f"Skill name exceeds {MAX_NAME_LENGTH} character limit ({len(name)} chars)")
+    if len(normalized) > MAX_NAME_LENGTH:
+        errors.append(f"Skill name exceeds {MAX_NAME_LENGTH} character limit ({len(normalized)} chars)")
 
-    if name != name.lower():
-        errors.append(f"Skill name '{name}' must be lowercase")
+    if normalized != normalized.lower():
+        errors.append(f"Skill name '{normalized}' must be lowercase")
 
-    if name.startswith("-") or name.endswith("-"):
+    if normalized.startswith("-") or normalized.endswith("-"):
         errors.append("Skill name cannot start or end with a hyphen")
 
-    if "--" in name:
+    if "--" in normalized:
         errors.append("Skill name cannot contain consecutive hyphens")
 
-    if not all(c.isalnum() or c == "-" for c in name):
+    if not all(c.isalnum() or c == "-" for c in normalized):
         errors.append(
-            f"Skill name '{name}' contains invalid characters. Only letters, digits, and hyphens are allowed."
+            f"Skill name '{normalized}' contains invalid characters. Only letters, digits, and hyphens are allowed."
         )
 
     if skill_dir:
         dir_name = unicodedata.normalize("NFKC", skill_dir.name)
-        if dir_name != name:
-            errors.append(f"Directory name '{skill_dir.name}' must match skill name '{name}'")
+        if dir_name != normalized:
+            errors.append(f"Directory name '{skill_dir.name}' must match skill name '{normalized}'")
 
     return errors
 
 
-def _validate_description(description) -> list[str]:
+def _validate_description(description: Any) -> list[str]:
     """Validate description field."""
-    errors = []
+    errors: list[str] = []
 
     if not isinstance(description, str) or not description.strip():
         errors.append("Field 'description' must be a non-empty string")
@@ -88,9 +89,9 @@ def _validate_description(description) -> list[str]:
     return errors
 
 
-def _validate_compatibility(compatibility) -> list[str]:
+def _validate_compatibility(compatibility: Any) -> list[str]:
     """Validate compatibility field."""
-    errors = []
+    errors: list[str] = []
 
     if not isinstance(compatibility, str):
         errors.append("Field 'compatibility' must be a string")
@@ -102,26 +103,25 @@ def _validate_compatibility(compatibility) -> list[str]:
     return errors
 
 
-def _validate_metadata_field(metadata) -> list[str]:
+def _validate_metadata_field(metadata_val: Any) -> list[str]:
     """Validate metadata field."""
-    errors = []
+    errors: list[str] = []
 
-    if not isinstance(metadata, dict):
+    if not isinstance(metadata_val, dict):
         errors.append("Field 'metadata' must be a mapping")
         return errors
 
-    for k, v in metadata.items():
-        if not isinstance(k, str):
-            errors.append(f"Metadata key '{k}' must be a string")
+    typed_meta = cast(dict[str, Any], metadata_val)
+    for k, v in typed_meta.items():
         if not isinstance(v, str):
             errors.append(f"Metadata value for key '{k}' must be a string")
 
     return errors
 
 
-def _validate_allowed_fields(metadata: dict) -> list[str]:
+def _validate_allowed_fields(metadata: dict[str, Any]) -> list[str]:
     """Validate that only allowed fields are present."""
-    errors = []
+    errors: list[str] = []
     extra = set(metadata.keys()) - ALLOWED_FIELDS
     if extra:
         errors.append(
@@ -130,9 +130,9 @@ def _validate_allowed_fields(metadata: dict) -> list[str]:
     return errors
 
 
-def _collect_warnings(metadata: dict, body: str, skill_dir: Path) -> list[str]:
+def _collect_warnings(metadata: dict[str, Any], body: str, skill_dir: Path) -> list[str]:
     """Collect best-practice warnings."""
-    warnings = []
+    warnings: list[str] = []
 
     # Description quality
     desc = metadata.get("description", "")
@@ -149,7 +149,8 @@ def _collect_warnings(metadata: dict, body: str, skill_dir: Path) -> list[str]:
         line_count = len(body.splitlines())
         if line_count > 500:
             warnings.append(
-                f"SKILL.md body is {line_count} lines (recommended: under 500). "
+                f"SKILL.md body is {line_count} lines "
+                f"(recommended: under 500). "
                 "Consider moving detailed content to references/ or assets/"
             )
 
@@ -160,11 +161,11 @@ def _collect_warnings(metadata: dict, body: str, skill_dir: Path) -> list[str]:
     return warnings
 
 
-def validate(skill_dir: Path) -> dict:
+def validate(skill_dir: Path) -> dict[str, Any]:
     """Validate a skill directory. Returns result dict."""
     skill_dir = Path(skill_dir).resolve()
-    errors = []
-    warnings = []
+    errors: list[str] = []
+    warnings: list[str] = []
 
     # Check path exists
     if not skill_dir.exists():
@@ -198,7 +199,12 @@ def validate(skill_dir: Path) -> dict:
         content = skill_md.read_text(encoding="utf-8")
         metadata, body = parse_frontmatter(content)
     except (ValueError, FileNotFoundError) as e:
-        return {"skill_dir": str(skill_dir), "valid": False, "errors": [str(e)], "warnings": []}
+        return {
+            "skill_dir": str(skill_dir),
+            "valid": False,
+            "errors": [str(e)],
+            "warnings": [],
+        }
 
     # Validate fields
     errors.extend(_validate_allowed_fields(metadata))
@@ -238,7 +244,9 @@ def validate(skill_dir: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Validate an Agent Skill directory against the specification.",
-        epilog="Examples:\n  uv run scripts/validate.py ./my-skill\n  uv run scripts/validate.py ./my-skill/SKILL.md\n",
+        epilog=(
+            "Examples:\n  uv run scripts/validate.py ./my-skill\n  uv run scripts/validate.py ./my-skill/SKILL.md\n"
+        ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(

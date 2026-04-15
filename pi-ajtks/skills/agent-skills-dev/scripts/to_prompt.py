@@ -22,17 +22,18 @@ import argparse
 import html
 import sys
 from pathlib import Path
+from typing import Any
 
 from _common import error_exit, output_json, read_skill_md
 
 
-def to_prompt(skill_dirs: list[Path]) -> dict:
+def to_prompt(skill_dirs: list[Path]) -> dict[str, Any]:
     """Generate <available_skills> XML and structured data.
 
-    Returns a dict with 'skills' (list of skill info) and 'prompt' (XML string).
+    Returns a dict with 'skills' (list of skill info) and 'prompt' (XML).
     """
-    skills_info = []
-    xml_lines = ["<available_skills>"]
+    skills_info: list[dict[str, str]] = []
+    xml_lines: list[str] = ["<available_skills>"]
 
     for skill_dir in skill_dirs:
         skill_dir = Path(skill_dir).resolve()
@@ -43,21 +44,31 @@ def to_prompt(skill_dirs: list[Path]) -> dict:
             print(f"Warning: skipping {skill_dir}: {e}", file=sys.stderr)
             continue
 
-        name = metadata.get("name", "")
-        description = metadata.get("description", "")
+        name: Any = metadata.get("name", "")
+        description: Any = metadata.get("description", "")
 
         if not name or not description:
-            print(f"Warning: skipping {skill_dir}: missing name or description", file=sys.stderr)
+            print(
+                f"Warning: skipping {skill_dir}: missing name or description",
+                file=sys.stderr,
+            )
             continue
 
+        name_str = str(name)
+        desc_str = str(description)
+
         # Build structured info
-        skill_data = {"name": name, "description": description, "location": str(skill_md_path)}
+        skill_data: dict[str, str] = {
+            "name": name_str,
+            "description": desc_str,
+            "location": str(skill_md_path),
+        }
         skills_info.append(skill_data)
 
         # Build XML
         xml_lines.append("<skill>")
-        xml_lines.append(f"<name>{html.escape(name)}</name>")
-        xml_lines.append(f"<description>{html.escape(description)}</description>")
+        xml_lines.append(f"<name>{html.escape(name_str)}</name>")
+        xml_lines.append(f"<description>{html.escape(desc_str)}</description>")
         xml_lines.append(f"<location>{html.escape(str(skill_md_path))}</location>")
         xml_lines.append("</skill>")
 
@@ -85,7 +96,7 @@ def main() -> None:
     args = parser.parse_args()
 
     # Resolve paths — if pointed at SKILL.md, use parent directory
-    skill_dirs = []
+    skill_dirs: list[Path] = []
     for p in args.skill_paths:
         path = Path(p)
         if path.is_file() and path.name.lower() == "skill.md":

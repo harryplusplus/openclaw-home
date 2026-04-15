@@ -19,11 +19,12 @@ Exit codes:
 
 import argparse
 from pathlib import Path
+from typing import Any
 
 from _common import error_exit, output_json, read_skill_md
 
 
-def read_properties(skill_dir: Path) -> dict:
+def read_properties(skill_dir: Path) -> dict[str, Any]:
     """Read skill properties from SKILL.md frontmatter.
 
     Returns a dict with the skill properties.
@@ -32,17 +33,17 @@ def read_properties(skill_dir: Path) -> dict:
     metadata, _body, _skill_md_path = read_skill_md(skill_dir)
 
     # Build output dict, including only present fields
-    result = {}
+    result: dict[str, Any] = {}
 
     if "name" not in metadata:
         raise ValueError("Missing required field in frontmatter: name")
     if "description" not in metadata:
         raise ValueError("Missing required field in frontmatter: description")
 
-    result["name"] = metadata["name"].strip() if isinstance(metadata["name"], str) else metadata["name"]
-    result["description"] = (
-        metadata["description"].strip() if isinstance(metadata["description"], str) else metadata["description"]
-    )
+    name = metadata["name"]
+    description = metadata["description"]
+    result["name"] = name.strip() if isinstance(name, str) else name
+    result["description"] = description.strip() if isinstance(description, str) else description
 
     if "license" in metadata:
         result["license"] = metadata["license"]
@@ -50,8 +51,9 @@ def read_properties(skill_dir: Path) -> dict:
         result["compatibility"] = metadata["compatibility"]
     if "allowed-tools" in metadata:
         result["allowed-tools"] = metadata["allowed-tools"]
-    if "metadata" in metadata and isinstance(metadata["metadata"], dict) and metadata["metadata"]:
-        result["metadata"] = metadata["metadata"]
+    meta = metadata.get("metadata")
+    if isinstance(meta, dict) and meta:
+        result["metadata"] = meta
 
     return result
 

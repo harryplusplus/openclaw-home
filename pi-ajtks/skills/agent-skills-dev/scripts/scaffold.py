@@ -21,6 +21,7 @@ Exit codes:
 import argparse
 import re
 from pathlib import Path
+from typing import Any
 
 from _common import error_exit, output_json
 
@@ -30,7 +31,7 @@ NAME_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 def validate_skill_name(name: str) -> list[str]:
     """Validate a skill name for scaffolding."""
-    errors = []
+    errors: list[str] = []
 
     if not name:
         errors.append("Skill name cannot be empty")
@@ -56,7 +57,7 @@ def validate_skill_name(name: str) -> list[str]:
     return errors
 
 
-SKILL_MD_TEMPLATE = """\
+SKILL_MD_TEMPLATE: str = """\
 ---
 name: {name}
 description: >-
@@ -89,13 +90,13 @@ for flexible ones. Provide defaults, not menus.]
 """
 
 
-def scaffold(name: str, output_dir: Path) -> dict:
+def scaffold(name: str, output_dir: Path) -> dict[str, Any]:
     """Create a new skill scaffold.
 
     Returns a dict with the created paths.
     """
     skill_dir = output_dir / name
-    created = []
+    created: list[str] = []
 
     # Create main directory
     skill_dir.mkdir(parents=True, exist_ok=False)

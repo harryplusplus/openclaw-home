@@ -9,6 +9,7 @@
 import json
 import sys
 from pathlib import Path
+from typing import Any, cast
 
 import yaml
 
@@ -22,7 +23,7 @@ def find_skill_md(skill_dir: Path) -> Path | None:
     return None
 
 
-def parse_frontmatter(content: str) -> tuple[dict, str]:
+def parse_frontmatter(content: str) -> tuple[dict[str, Any], str]:
     """Parse YAML frontmatter from SKILL.md content.
 
     Returns (metadata_dict, body_string).
@@ -39,24 +40,28 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
     body = parts[2].strip()
 
     try:
-        metadata = yaml.safe_load(frontmatter_str)
+        raw_metadata: Any = yaml.safe_load(frontmatter_str)
     except yaml.YAMLError as e:
         raise ValueError(f"Invalid YAML in frontmatter: {e}") from e
 
-    if metadata is None:
+    if raw_metadata is None:
         raise ValueError("SKILL.md frontmatter is empty")
 
-    if not isinstance(metadata, dict):
+    if not isinstance(raw_metadata, dict):
         raise ValueError("SKILL.md frontmatter must be a YAML mapping")
 
+    metadata = cast(dict[str, Any], raw_metadata)
+
     # Normalize metadata: ensure string values for known string fields
-    if "metadata" in metadata and isinstance(metadata["metadata"], dict):
-        metadata["metadata"] = {str(k): str(v) for k, v in metadata["metadata"].items()}
+    meta_field = metadata.get("metadata")
+    if isinstance(meta_field, dict):
+        typed_meta = cast(dict[str, Any], meta_field)
+        metadata["metadata"] = {str(k): str(v) for k, v in typed_meta.items()}
 
     return metadata, body
 
 
-def read_skill_md(skill_dir: Path) -> tuple[dict, str, Path]:
+def read_skill_md(skill_dir: Path) -> tuple[dict[str, Any], str, Path]:
     """Find and parse SKILL.md from a skill directory.
 
     Returns (metadata_dict, body_string, skill_md_path).
@@ -74,7 +79,7 @@ def read_skill_md(skill_dir: Path) -> tuple[dict, str, Path]:
     return metadata, body, skill_md
 
 
-def output_json(data: dict | list) -> None:
+def output_json(data: dict[str, Any] | list[Any]) -> None:
     """Print data as JSON to stdout."""
     print(json.dumps(data, ensure_ascii=False, indent=2))
 
