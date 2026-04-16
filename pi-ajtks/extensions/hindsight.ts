@@ -44,6 +44,7 @@ async function retain(
     documentId: string
     updateMode: 'replace' | 'append'
     tags?: string[]
+    async?: boolean
   },
 ): Promise<unknown> {
   return hindsightFetch(
@@ -59,6 +60,7 @@ async function retain(
           tags: options.tags,
         },
       ],
+      async: options.async,
     },
   )
 }
@@ -283,29 +285,30 @@ export default async function (pi: ExtensionAPI) {
     const content = serializeBranch(branch)
     if (!content.trim()) return
 
-    retain(baseUrl, apiKey, bankId, content, {
-      documentId: sessionId,
-      updateMode: 'replace',
-    })
-      .then(() => {
-        writeLog(logStream, {
-          ts: new Date().toISOString(),
-          level: 'debug',
-          event: 'retain',
-          bankId,
-          sessionId,
-          contentLength: content.length,
-        })
+    try {
+      await retain(baseUrl, apiKey, bankId, content, {
+        documentId: sessionId,
+        updateMode: 'replace',
+        async: true,
       })
-      .catch((err: unknown) => {
-        writeLog(logStream, {
-          ts: new Date().toISOString(),
-          level: 'error',
-          event: 'retain_failed',
-          bankId,
-          sessionId,
-          error: String(err),
-        })
+
+      writeLog(logStream, {
+        ts: new Date().toISOString(),
+        level: 'debug',
+        event: 'retain',
+        bankId,
+        sessionId,
+        contentLength: content.length,
       })
+    } catch (err) {
+      writeLog(logStream, {
+        ts: new Date().toISOString(),
+        level: 'error',
+        event: 'retain_failed',
+        bankId,
+        sessionId,
+        error: String(err),
+      })
+    }
   })
 }
