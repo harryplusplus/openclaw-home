@@ -3,13 +3,14 @@ import {
   recallResponseToPromptString,
   type RecallResponse,
 } from '@vectorize-io/hindsight-client'
-import { createWriteStream, mkdirSync } from 'node:fs'
+import { mkdir } from 'node:fs/promises'
+import { createWriteStream, type WriteStream } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 async function hindsightFetch(
   baseUrl: string,
-  apiKey: string,
+  apiKey: string | undefined,
   path: string,
   body: unknown,
   signal?: AbortSignal,
@@ -36,14 +37,13 @@ async function hindsightFetch(
 
 async function retain(
   baseUrl: string,
-  apiKey: string,
+  apiKey: string | undefined,
   bankId: string,
   content: string,
   options: {
     documentId: string
     updateMode: 'replace' | 'append'
     tags?: string[]
-    signal?: AbortSignal
   },
 ): Promise<unknown> {
   return hindsightFetch(
@@ -60,29 +60,54 @@ async function retain(
         },
       ],
     },
-    options.signal,
   )
 }
 
 async function recall(
   baseUrl: string,
-  apiKey: string,
+  apiKey: string | undefined,
   bankId: string,
   query: string,
-  options: { tags?: string[]; maxTokens?: number; signal?: AbortSignal },
+  options: {
+    tags?: string[]
+    maxTokens?: number
+    timeoutMs?: number
+    signal?: AbortSignal
+  },
 ): Promise<RecallResponse> {
-  return hindsightFetch(
-    baseUrl,
-    apiKey,
-    `/v1/default/banks/${bankId}/memories/recall`,
-    {
-      query,
-      tags: options.tags,
-      max_tokens: options.maxTokens ?? 2048,
-      budget: 'mid',
-    },
-    options.signal,
-  ) as Promise<RecallResponse>
+  const controller = new AbortController()
+  const timeout = setTimeout(
+    () => controller.abort(),
+    options.timeoutMs ?? 30_000,
+  )
+
+  if (options.signal) {
+    options.signal.addEventListener('abort', () => controller.abort(), {
+      once: true,
+    })
+  }
+
+  try {
+    return (await hindsightFetch(
+      baseUrl,
+      apiKey,
+      `/v1/default/banks/${bankId}/memories/recall`,
+      {
+        query,
+        tags: options.tags,
+        max_tokens: options.maxTokens ?? 2048,
+        budget: 'mid',
+        include: {
+          entities: { max_tokens: 500 },
+          chunks: { max_tokens: 8192 },
+          source_facts: { max_tokens: 4096 },
+        },
+      },
+      controller.signal,
+    )) as Promise<RecallResponse>
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 interface SessionEntry {
@@ -166,28 +191,30 @@ interface LogEntry {
   [key: string]: unknown
 }
 
-function createLogStream(bankId: string) {
+async function createLogStream(bankId: string) {
   const dir = join(homedir(), '.ajtks', 'logs')
-  mkdirSync(dir, { recursive: true })
+  await mkdir(dir, { recursive: true })
   return createWriteStream(join(dir, `${bankId}.jsonl`), { flags: 'a' })
 }
 
-function writeLog(stream: ReturnType<typeof createLogStream>, entry: LogEntry) {
+function writeLog(stream: WriteStream, entry: LogEntry) {
   const line = JSON.stringify(entry) + '\n'
-  if (Buffer.byteLength(line) > 4096) {
-    const truncated: LogEntry = {
-      ...entry,
-      _truncated: true,
-      _originalBytes: Buffer.byteLength(line),
-    }
-    const truncatedLine = JSON.stringify(truncated)
-    stream.write(truncatedLine.slice(0, 4090) + '…"}\n')
+  const byteLength = Buffer.byteLength(line)
+  if (byteLength > 4096) {
+    const { response: _, ...meta } = entry
+    const metaLine =
+      JSON.stringify({
+        ...meta,
+        _truncated: true,
+        _originalBytes: byteLength,
+      }) + '\n'
+    stream.write(metaLine)
   } else {
     stream.write(line)
   }
 }
 
-export default function (pi: ExtensionAPI) {
+export default async function (pi: ExtensionAPI) {
   const bankId = process.env.HINDSIGHT_BANK_ID
   if (!bankId) {
     throw new Error(
@@ -196,20 +223,25 @@ export default function (pi: ExtensionAPI) {
   }
 
   const baseUrl = process.env.HINDSIGHT_BASE_URL ?? 'http://localhost:8888'
-  const apiKey = process.env.HINDSIGHT_API_KEY ?? ''
+  const apiKey = process.env.HINDSIGHT_API_KEY
+  const recallTimeoutMs = process.env.HINDSIGHT_RECALL_TIMEOUT_MS
+    ? Number(process.env.HINDSIGHT_RECALL_TIMEOUT_MS)
+    : undefined
 
-  const logStream = createLogStream(bankId)
+  const logStream = await createLogStream(bankId)
 
   pi.on('session_shutdown', () => {
     logStream.end()
   })
 
   pi.on('before_agent_start', async (event, ctx) => {
-    const sessionId = ctx.sessionManager.getSessionId() ?? 'unknown'
+    const sessionId = ctx.sessionManager.getSessionId()
+    if (!sessionId) return
 
     try {
       const response = await recall(baseUrl, apiKey, bankId, event.prompt, {
         maxTokens: 2048,
+        timeoutMs: recallTimeoutMs,
         signal: ctx.signal,
       })
 
@@ -229,8 +261,7 @@ export default function (pi: ExtensionAPI) {
 
       return {
         systemPrompt:
-          event.systemPrompt +
-          `\n\n## Past Experiences (Hindsight)\n\n${promptText}\n`,
+          event.systemPrompt + `\n\n<hindsight>\n${promptText}\n</hindsight>\n`,
       }
     } catch (err) {
       writeLog(logStream, {
@@ -252,30 +283,29 @@ export default function (pi: ExtensionAPI) {
     const content = serializeBranch(branch)
     if (!content.trim()) return
 
-    try {
-      await retain(baseUrl, apiKey, bankId, content, {
-        documentId: sessionId,
-        updateMode: 'replace',
-        signal: ctx.signal,
+    retain(baseUrl, apiKey, bankId, content, {
+      documentId: sessionId,
+      updateMode: 'replace',
+    })
+      .then(() => {
+        writeLog(logStream, {
+          ts: new Date().toISOString(),
+          level: 'debug',
+          event: 'retain',
+          bankId,
+          sessionId,
+          contentLength: content.length,
+        })
       })
-
-      writeLog(logStream, {
-        ts: new Date().toISOString(),
-        level: 'debug',
-        event: 'retain',
-        bankId,
-        sessionId,
-        contentLength: content.length,
+      .catch((err: unknown) => {
+        writeLog(logStream, {
+          ts: new Date().toISOString(),
+          level: 'error',
+          event: 'retain_failed',
+          bankId,
+          sessionId,
+          error: String(err),
+        })
       })
-    } catch (err) {
-      writeLog(logStream, {
-        ts: new Date().toISOString(),
-        level: 'error',
-        event: 'retain_failed',
-        bankId,
-        sessionId,
-        error: String(err),
-      })
-    }
   })
 }
