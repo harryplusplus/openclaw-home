@@ -78,10 +78,7 @@ async function recall(
   },
 ): Promise<RecallResponse> {
   const controller = new AbortController()
-  const timeout = setTimeout(
-    () => controller.abort(),
-    options.timeoutMs ?? 30_000,
-  )
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs)
 
   if (options.signal) {
     options.signal.addEventListener('abort', () => controller.abort(), {
@@ -228,7 +225,7 @@ export default async function (pi: ExtensionAPI) {
   const apiKey = process.env.HINDSIGHT_API_KEY
   const recallTimeoutMs = process.env.HINDSIGHT_RECALL_TIMEOUT_MS
     ? Number(process.env.HINDSIGHT_RECALL_TIMEOUT_MS)
-    : undefined
+    : 30_000
 
   const logStream = await createLogStream(bankId)
 
