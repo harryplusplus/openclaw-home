@@ -72,7 +72,7 @@ pi-ajtks/
 
 ## 안전한 테스트
 
-확장은 Pi에 자동 로드되어 운영에 영향을 줍니다. 개발 중 격리 테스트:
+확장은 Pi 설정에서 명시적으로 선택한 것만 로드됩니다. 개발 중인 확장이 자동으로 로드될 걱정 없이 안전하게 개발할 수 있습니다.
 
 ```bash
 # 단일 확장 격리 테스트
@@ -85,14 +85,15 @@ pi -e ./extensions/my-extension.ts -p "테스트 프롬프트"
 pi -e ./extensions/my-extension.ts --no-session -p "테스트"
 ```
 
-특정 확장만 비활성화하려면 `settings.json`에서 패키지 필터링:
+개발 완료 후 `~/.pi/agent/settings.json`의 패키지 `extensions` 목록에 추가하면 Pi에 반영됩니다:
 
 ```json
 {
   "packages": [
     {
       "source": "../../repo/al-jal-ttak-kkal-sen/pi-ajtks",
-      "extensions": ["extensions/*.ts", "!extensions/my-extension.ts"]
+      "extensions": ["extensions/grep.ts", "extensions/my-extension.ts"],
+      "skills": [...]
     }
   ]
 }
