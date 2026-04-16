@@ -12,5 +12,8 @@
   "devDependencies": {
     "@mariozechner/pi-coding-agent": "^0.67.1",
     "@sinclair/typebox": "^0.34.49"
+  },
+  "dependencies": {
+    "@vectorize-io/hindsight-client": "^0.5.2"
   }
 }

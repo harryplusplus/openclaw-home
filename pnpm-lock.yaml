@@ -13,6 +13,10 @@ importers:
         version: 0.5.0(@babel/core@7.29.0)(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(jiti@2.6.1)(redux@5.0.1)(styled-components@6.4.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5))
 
   pi-ajtks:
+    dependencies:
+      '@vectorize-io/hindsight-client':
+        specifier: ^0.5.2
+        version: 0.5.2
     devDependencies:
       '@mariozechner/pi-coding-agent':
         specifier: ^0.67.1
@@ -1743,6 +1747,9 @@ packages:
     resolution: {integrity: sha512-lrW200hZdbfRtztbygyaq/6jP6AKE8qQN2KvPcJ+x7wiD038YtnYtZ82IMNJ69GJibV7bwL3y9FgK+5w/pYt6g==}
     cpu: [x64]
     os: [win32]
+
+  '@vectorize-io/hindsight-client@0.5.2':
+    resolution: {integrity: sha512-BUN658MR2XE96COM66dED9KeGGFgThQ6DNiEy+EH7T//Lnqn7MjtoA91jVsEilPa7Tpqazh8aK/qajyoSIjg/g==}
 
   '@vectorize-io/hindsight-control-plane@0.5.0':
     resolution: {integrity: sha512-E1ke8IZczVa1K69bLTIHhG472LGAgo8ylPPMnloroGlYmvZ/kYTlRmmEgUUGP9UNmyWslGzInN+coOvp/E/8dA==}
@@ -6086,6 +6093,8 @@ snapshots:
 
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
+
+  '@vectorize-io/hindsight-client@0.5.2': {}
 
   '@vectorize-io/hindsight-control-plane@0.5.0(@babel/core@7.29.0)(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(jiti@2.6.1)(redux@5.0.1)(styled-components@6.4.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5))':
     dependencies:
