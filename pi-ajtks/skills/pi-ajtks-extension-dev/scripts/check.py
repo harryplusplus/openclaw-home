@@ -16,16 +16,8 @@ import sys
 from pathlib import Path
 
 
-def run_cmd(cmd: list[str], label: str) -> dict[str, Any]:
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        return {"label": label, "exitCode": result.returncode, "stdout": result.stdout, "stderr": result.stderr}
-    except FileNotFoundError:
-        return {"label": label, "error": f"{cmd[0]} not found"}
-
-
 def check_format(paths: list[Path], fix: bool) -> dict[str, Any]:
-    cmd = ["oxfmt"]
+    cmd = ["npx", "oxfmt"]
     if fix:
         cmd.append("--write")
     else:
@@ -50,7 +42,7 @@ def check_format(paths: list[Path], fix: bool) -> dict[str, Any]:
 
 
 def check_lint(paths: list[Path]) -> dict[str, Any]:
-    cmd = ["oxlint"]
+    cmd = ["npx", "oxlint"]
     cmd.extend(str(p) for p in paths)
 
     result = subprocess.run(cmd, capture_output=True, text=True)
@@ -75,7 +67,7 @@ def check_lint(paths: list[Path]) -> dict[str, Any]:
 
 
 def check_typecheck(paths: list[Path]) -> dict[str, Any]:
-    cmd = ["tsgo", "--noEmit", "--skipLibCheck"]
+    cmd = ["npx", "tsgo", "--noEmit", "--skipLibCheck"]
     cmd.extend(str(p) for p in paths)
 
     result = subprocess.run(cmd, capture_output=True, text=True)

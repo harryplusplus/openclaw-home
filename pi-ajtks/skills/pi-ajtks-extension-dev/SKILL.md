@@ -5,7 +5,7 @@ description: >-
   린트, 타입체크를 검사합니다. Pi 확장을 만들거나 수정할 때, 확장 품질
   검사가 필요할 때 사용하세요.
 license: MIT
-compatibility: oxfmt, oxlint, tsgo가 필요합니다.
+compatibility: npm이 필요합니다.
 metadata:
   author: al-jal-ttak-kkal-sen
   version: "1.0"
@@ -43,13 +43,15 @@ uv run scripts/check.py <path>... --typecheck-only
 
 ## 설정
 
-전역 도구를 사용하므로 프로젝트 설정에 의존하지 않습니다:
+npx로 호출하므로 별도 설치가 필요 없습니다:
 
-| 도구 | 용도 | 버전 |
-|------|------|------|
-| oxfmt | 포맷 | ≥0.45 |
-| oxlint | 린트 | ≥1.60 |
-| tsgo | 타입체크 | ≥7.0 |
+| 도구 | npm 패키지 | 용도 |
+|------|-----------|------|
+| oxfmt | `oxfmt` | 포맷 |
+| oxlint | `oxlint` | 린트 |
+| tsgo | `@typescript/native-preview` | 타입체크 |
+
+`npx`가 최초 실행 시 자동 다운로드합니다.
 
 ## 프로젝트 구조
 
